@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+
+# Set environment variables to non-interactive to avoid prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        vim \
+        curl \
+        gnupg \
+        xz-utils \
+        build-essential \
+        ca-certificates \
+        software-properties-common && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Download install script
+RUN curl https://dlang.org/install.sh | bash -s dmd
+RUN echo 'source /root/dlang/*/activate' >> ~/.bashrc
+# ln -sf /dlang/dmd-*/linux/bin64/* /usr/local/bin/
