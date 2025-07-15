@@ -1,21 +1,65 @@
+# D Programming Language Base Image
+# Installs latest DMD and creates symlinks for global access
+# Preserves original installation to maintain library paths
+
 FROM ubuntu:24.04
 
-# Set environment variables to non-interactive to avoid prompts
+# Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        vim \
-        curl \
-        gnupg \
-        xz-utils \
-        build-essential \
-        ca-certificates \
-        software-properties-common && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Optional
+    vim \
+    # Required for DMD
+    gcc \
+    g++ \
+    libc6-dev \
+    # Installation tools
+    curl \
+    ca-certificates \
+    xz-utils \
+    # Development libraries
+    libssl-dev \
+    zlib1g-dev \
+    git \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Download install script
-RUN curl https://dlang.org/install.sh | bash -s dmd
-RUN echo 'source /root/dlang/*/activate' >> ~/.bashrc
-# ln -sf /dlang/dmd-*/linux/bin64/* /usr/local/bin/
+# Install latest D compiler and create global symlinks
+RUN curl -fsS https://dlang.org/install.sh | bash -s dmd && \
+    # Find the installed DMD directory
+    DMD_DIR=$(find /root/dlang -name "dmd-*" -type d | head -n 1) && \
+    # Create symlinks to make tools globally accessible
+    ln -sf "$DMD_DIR/linux/bin64/dmd" /usr/local/bin/dmd && \
+    ln -sf "$DMD_DIR/linux/bin64/dub" /usr/local/bin/dub && \
+    ln -sf "$DMD_DIR/linux/bin64/rdmd" /usr/local/bin/rdmd && \
+    ln -sf "$DMD_DIR/linux/bin64/ddemangle" /usr/local/bin/ddemangle && \
+    ln -sf "$DMD_DIR/linux/bin64/dustmite" /usr/local/bin/dustmite && \
+    # Verify the symlinks work
+    which dmd && which dub && \
+    dmd --version && dub --version && \
+    # Test compilation
+    echo 'import std.stdio; void main() { writeln("D toolchain is ready!"); }' > /tmp/test.d && \
+    dmd /tmp/test.d -of=/tmp/test && \
+    /tmp/test && \
+    rm /tmp/test.d /tmp/test
+
+# Set environment variable
+ENV D_COMPILER=dmd
+
+# Set up working directory
+WORKDIR /workspace
+
+# Default command
+CMD ["/bin/bash"]
+
+# Metadata
+LABEL maintainer="Kirill Saidov"
+LABEL description="Ubuntu-based D development environment with symlinked global tools."
+LABEL version="1.0.0-symlink"
+LABEL d.compiler.version="latest"
+LABEL setup.type="symlink-global-access"
