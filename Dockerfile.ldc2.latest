@@ -1,0 +1,72 @@
+# D Programming Language Base Image
+# Installs latest LDC and creates symlinks for global access
+# Preserves original installation to maintain library paths
+
+FROM ubuntu:24.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Optional
+    vim \
+    # Required for LDC
+    gcc \
+    g++ \
+    libc6-dev \
+    # Installation tools
+    curl \
+    ca-certificates \
+    xz-utils \
+    # Development libraries
+    libssl-dev \
+    zlib1g-dev \
+    git \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install latest LDC compiler and create global symlinks
+RUN curl -fsS https://dlang.org/install.sh | bash -s ldc && \
+    # Find the installed LDC directory
+    LDC_DIR=$(find /root/dlang -name "ldc-*" -type d | head -n 1) && \
+    echo "Installing LDC toolchain from: $LDC_DIR" && \
+    # Create symlinks to make tools globally accessible
+    ln -sf "$LDC_DIR/bin/ldc2" /usr/local/bin/ldc2 && \
+    ln -sf "$LDC_DIR/bin/ldmd2" /usr/local/bin/ldmd2 && \
+    ln -sf "$LDC_DIR/bin/dub" /usr/local/bin/dub && \
+    ln -sf "$LDC_DIR/bin/rdmd" /usr/local/bin/rdmd && \
+    ln -sf "$LDC_DIR/bin/ddemangle" /usr/local/bin/ddemangle && \
+    ln -sf "$LDC_DIR/bin/dustmite" /usr/local/bin/dustmite && \
+    # Create DMD-compatible symlink (ldmd2 is DMD-compatible frontend for LDC)
+    ln -sf "$LDC_DIR/bin/ldmd2" /usr/local/bin/dmd && \
+    # Verify the symlinks work
+    which ldc2 && which ldmd2 && which dub && \
+    ldc2 --version && ldmd2 --version && dub --version && \
+    # Test compilation with both LDC native and DMD-compatible frontends
+    echo 'import std.stdio; void main() { writeln("LDC toolchain is ready!"); }' > /tmp/test.d && \
+    ldc2 /tmp/test.d -of=/tmp/test_ldc && \
+    /tmp/test_ldc && \
+    ldmd2 /tmp/test.d -of=/tmp/test_ldmd && \
+    /tmp/test_ldmd && \
+    rm /tmp/test.d /tmp/test_ldc /tmp/test_ldmd
+
+# Set environment variable to LDC
+ENV D_COMPILER=ldc2
+
+# Set up working directory
+WORKDIR /workspace
+
+# Default command
+CMD ["/bin/bash"]
+
+# Metadata
+LABEL maintainer="Kirill Saidov"
+LABEL description="Ubuntu-based D development environment with LDC compiler and symlinked global tools."
+LABEL version="1.0.0-ldc-symlink"
+LABEL d.compiler.version="latest"
+LABEL d.compiler.backend="llvm"
+LABEL setup.type="symlink-global-access"
