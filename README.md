@@ -23,7 +23,8 @@ All images are based on `ubuntu:24.04` and include the DMD/LDC2 compiler, `dub`,
 ### LDC2
 | Image Tag         | Description                         | Link       |
 | ----------------- | ----------------------------------- | ---------- |
-| `ldc2-latest`     | Latest LDC2 compiler + dub + rdmd   | [link](https://hub.docker.com/layers/kirillsaidov/dlang/ldc2-latest/images/sha256-7e3b1e8ba741d6d24af3683e27e7ad93d8ab3619adce1199694d994b05e21eb5) |
+| `ldc2-latest`     | Latest LDC2 compiler + dub + rdmd   | [link](https://hub.docker.com/layers/kirillsaidov/dlang/ldc2-latest/images/sha256-d838b07c3a683cc51c734c0adf36f74288d83cc309365a5f0654f6dda72120db) |
+| `ldc2-2.112.0`     | Latest LDC2 compiler + dub + rdmd   | [link](https://hub.docker.com/layers/kirillsaidov/dlang/ldc2-2.112.0/images/sha256-d838b07c3a683cc51c734c0adf36f74288d83cc309365a5f0654f6dda72120db) |
 | `ldc2-2.111.0`    | LDC2 compiler v2.111.0 + dub + rdmd | [link](https://hub.docker.com/layers/kirillsaidov/dlang/ldc2-2.111.0/images/sha256-bbe43bf2e2ab5ed0539ccbebfe2084c0d937f098df6cf9fe5b1bf2d20e58ddf2) |
 
 ## Usage Example
